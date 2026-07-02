@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediStock &mdash; Pharmacy Management</title>
+
+<!-- Google Font: Inter -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- =========================================================
+     APP SHELL
+     Sidebar (left, collapsible) + Topbar + Main content area
+========================================================== -->
+<div class="app-shell" id="appShell">
+
+  <!-- ---------------- SIDEBAR ---------------- -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">M</div>
+      <span class="brand-text">MediStock</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-view="dashboard" title="Dashboard">
+        <span class="nav-icon" data-icon="dashboard"></span>
+        <span class="nav-label">Dashboard</span>
+      </button>
+      <button class="nav-item" data-view="sales" title="Sales">
+        <span class="nav-icon" data-icon="sales"></span>
+        <span class="nav-label">Sales</span>
+      </button>
+      <button class="nav-item" data-view="inventory" title="Inventory">
+        <span class="nav-icon" data-icon="inventory"></span>
+        <span class="nav-label">Inventory</span>
+      </button>
+      <button class="nav-item" data-view="backup" title="Backup">
+        <span class="nav-icon" data-icon="backup"></span>
+        <span class="nav-label">Backup</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="nav-item" id="logoutBtn" title="Logout">
+        <span class="nav-icon" data-icon="logout"></span>
+        <span class="nav-label">Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ---------------- MAIN COLUMN ---------------- -->
+  <div class="main-column">
+
+    <!-- ---------------- TOPBAR ---------------- -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn" id="sidebarToggle" aria-label="Toggle sidebar">
+          <span class="nav-icon" data-icon="menu"></span>
+        </button>
+        <div>
+          <h1 class="topbar-title" id="pageTitle">Dashboard</h1>
+          <p class="topbar-subtitle" id="pageSubtitle">Overview of your store's performance</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="today-pill">
+          <span class="nav-icon" data-icon="calendar"></span>
+          <span id="todayDate">--</span>
+        </div>
+        <div class="user-chip">
+          <div class="user-avatar">PH</div>
+          <div class="user-meta">
+            <span class="user-name">Pharmacist</span>
+            <span class="user-role">Store Admin</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ---------------- CONTENT AREA ---------------- -->
+    <main class="content" id="content">
+
+      <!-- ================= DASHBOARD VIEW ================= -->
+      <section class="view" id="view-dashboard">
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-icon stat-icon--primary"><span class="nav-icon" data-icon="revenue"></span></div>
+            <div class="stat-meta">
+              <span class="stat-label">Today's Sales</span>
+              <span class="stat-value" id="statTodaySales">₹0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon--success"><span class="nav-icon" data-icon="bill"></span></div>
+            <div class="stat-meta">
+              <span class="stat-label">Bills Today</span>
+              <span class="stat-value" id="statTodayBills">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon--warning"><span class="nav-icon" data-icon="low-stock"></span></div>
+            <div class="stat-meta">
+              <span class="stat-label">Low Stock Items</span>
+              <span class="stat-value" id="statLowStock">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon--danger"><span class="nav-icon" data-icon="expired"></span></div>
+            <div class="stat-meta">
+              <span class="stat-label">Expired / Near Expiry</span>
+              <span class="stat-value" id="statExpiry">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Recent Sales</h2>
+              <button class="btn btn-ghost btn-sm" data-view-link="sales">View all</button>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table" id="recentSalesTable">
+                <thead>
+                  <tr><th>Invoice</th><th>Date</th><th>Items</th><th>Payment</th><th>Total</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <p class="empty-state" id="recentSalesEmpty" hidden>No sales recorded yet. Create your first bill from the Sales tab.</p>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Stock Alerts</h2>
+              <button class="btn btn-ghost btn-sm" data-view-link="inventory">Manage inventory</button>
+            </div>
+            <div class="alert-list" id="alertList"></div>
+            <p class="empty-state" id="alertEmpty" hidden>All stock levels look healthy.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SALES VIEW ================= -->
+      <section class="view" id="view-sales" hidden>
+        <div class="sales-grid">
+
+          <!-- Bill builder -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">New Bill</h2>
+              <span class="badge badge-neutral" id="invoicePreviewNo">INV-0001</span>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label for="medicineSearch">Search medicine</label>
+                <input type="text" id="medicineSearch" placeholder="Type medicine name, generic name or batch...">
+                <div class="autocomplete" id="medicineAutocomplete" hidden></div>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table class="data-table" id="billItemsTable">
+                <thead>
+                  <tr>
+                    <th>Medicine</th><th>Batch</th><th>Qty</th><th>Price</th><th>GST %</th><th>Line Total</th><th></th>
+                  </tr>
+                </thead>
+                <tbody id="billItemsBody"></tbody>
+              </table>
+            </div>
+            <p class="empty-state" id="billEmpty">Search and add medicines to start a new bill.</p>
+
+            <div class="bill-controls">
+              <div class="field">
+                <label for="discountInput">Discount (₹)</label>
+                <input type="number" id="discountInput" min="0" step="0.01" value="0">
+              </div>
+              <div class="field">
+                <label for="paymentMethod">Payment method</label>
+                <select id="paymentMethod">
+                  <option value="Cash">Cash</option>
+                  <option value="UPI">UPI</option>
+                  <option value="Card">Card</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="customerName">Customer name (optional)</label>
+                <input type="text" id="customerName" placeholder="Walk-in customer">
+              </div>
+            </div>
+          </div>
+
+          <!-- Bill summary / preview -->
+          <div class="card bill-summary-card">
+            <div class="card-header">
+              <h2 class="card-title">Bill Summary</h2>
+            </div>
+            <div class="summary-rows">
+              <div class="summary-row"><span>Subtotal</span><span id="sumSubtotal">₹0.00</span></div>
+              <div class="summary-row"><span>GST</span><span id="sumGst">₹0.00</span></div>
+              <div class="summary-row"><span>Discount</span><span id="sumDiscount">- ₹0.00</span></div>
+              <div class="summary-row summary-total"><span>Total Payable</span><span id="sumTotal">₹0.00</span></div>
+            </div>
+            <div class="summary-actions">
+              <button class="btn btn-secondary" id="clearBillBtn">Clear Bill</button>
+              <button class="btn btn-primary" id="previewBillBtn">Preview Invoice</button>
+            </div>
+
+            <div class="divider"></div>
+            <h3 class="mini-heading">Today at a glance</h3>
+            <div class="mini-stats">
+              <div><span class="mini-value" id="miniTodaySales">₹0</span><span class="mini-label">Sales</span></div>
+              <div><span class="mini-value" id="miniTodayBills">0</span><span class="mini-label">Bills</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= INVENTORY VIEW ================= -->
+      <section class="view" id="view-inventory" hidden>
+        <div class="card">
+          <div class="card-header inventory-header">
+            <h2 class="card-title">Inventory</h2>
+            <button class="btn btn-primary" id="addMedicineBtn">
+              <span class="nav-icon" data-icon="plus"></span> Add Medicine
+            </button>
+          </div>
+
+          <div class="toolbar">
+            <div class="field field-search">
+              <input type="text" id="inventorySearch" placeholder="Search by name, generic name, batch, supplier or rack...">
+            </div>
+            <select id="filterStatus" class="select-sm">
+              <option value="all">All Status</option>
+              <option value="ok">In Stock</option>
+              <option value="low">Low Stock</option>
+              <option value="near">Near Expiry</option>
+              <option value="expired">Expired</option>
+            </select>
+            <select id="sortField" class="select-sm">
+              <option value="name-asc">Name (A-Z)</option>
+              <option value="name-desc">Name (Z-A)</option>
+              <option value="qty-asc">Quantity (Low-High)</option>
+              <option value="qty-desc">Quantity (High-Low)</option>
+              <option value="expiry-asc">Expiry (Soonest)</option>
+              <option value="expiry-desc">Expiry (Latest)</option>
+            </select>
+          </div>
+
+          <div class="legend">
+            <span class="legend-item"><i class="dot dot-warning"></i> Low Stock</span>
+            <span class="legend-item"><i class="dot dot-danger"></i> Expired</span>
+            <span class="legend-item"><i class="dot dot-amber"></i> Near Expiry (&le;60 days)</span>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table" id="inventoryTable">
+              <thead>
+                <tr>
+                  <th>Name</th><th>Generic</th><th>Batch</th><th>Supplier</th><th>Rack</th>
+                  <th>Purchase ₹</th><th>Selling ₹</th><th>Qty</th><th>Min</th><th>Expiry</th><th>Status</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryBody"></tbody>
+            </table>
+          </div>
+          <p class="empty-state" id="inventoryEmpty" hidden>No medicines match your search or filters.</p>
+        </div>
+      </section>
+
+      <!-- ================= BACKUP VIEW ================= -->
+      <section class="view" id="view-backup" hidden>
+        <div class="backup-grid">
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Local Backup</h2>
+            </div>
+            <p class="card-desc">Export all your store data &mdash; inventory, sales history and settings &mdash; as a single JSON file kept on your device.</p>
+            <button class="btn btn-primary" id="exportBtn">
+              <span class="nav-icon" data-icon="download"></span> Export Backup (JSON)
+            </button>
+
+            <div class="divider"></div>
+
+            <h3 class="mini-heading">Restore from backup</h3>
+            <p class="card-desc">Import a previously exported JSON file. This will overwrite your current data after confirmation.</p>
+            <label class="file-drop" for="importFileInput">
+              <span class="nav-icon" data-icon="upload"></span>
+              <span id="importFileLabel">Click to choose a .json backup file</span>
+            </label>
+            <input type="file" id="importFileInput" accept="application/json" hidden>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Cloud Backup</h2>
+              <span class="badge badge-warning">Coming soon</span>
+            </div>
+            <p class="card-desc">Send a copy of your backup to Google Drive so it's safe even if this device is lost.</p>
+
+            <div class="field">
+              <label for="cloudEmail">Google account email</label>
+              <input type="email" id="cloudEmail" placeholder="you@example.com">
+            </div>
+            <button class="btn btn-secondary" id="cloudBackupBtn">
+              <span class="nav-icon" data-icon="cloud"></span> Backup to Google Drive
+            </button>
+
+            <div class="todo-box">
+              <strong>TODO &mdash; Cloud integration</strong>
+              <p>This button currently generates the backup JSON locally and simulates the hand-off. To wire up real Google Drive backups:</p>
+              <ol>
+                <li>Register the app in Google Cloud Console and enable the Drive API.</li>
+                <li>Implement Google OAuth 2.0 (Sign-In) to obtain a user access token &mdash; see <code>cloudBackup.authenticate()</code> in <code>script.js</code>.</li>
+                <li>Use the Drive API <code>files.create</code> (multipart upload) to push the JSON blob produced by <code>Backup.buildExportPayload()</code>.</li>
+                <li>Store the returned file ID / timestamp in <code>settings.cloudBackup</code> for status display.</li>
+              </ol>
+              <p>All hooks are isolated in the <code>CloudBackup</code> module so the rest of the app never needs to change.</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Danger Zone</h2>
+            </div>
+            <p class="card-desc">Wipe all data and reload sample data. Use only for testing.</p>
+            <button class="btn btn-danger" id="resetDataBtn">Reset to Sample Data</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- =========================================================
+     MODAL: Add / Edit Medicine
+========================================================== -->
+<div class="modal-overlay" id="medicineModalOverlay" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="medicineModalTitle">Add Medicine</h3>
+      <button class="icon-btn" id="closeMedicineModal" aria-label="Close">&times;</button>
+    </div>
+    <form id="medicineForm" class="modal-body">
+      <input type="hidden" id="medId">
+      <div class="form-grid">
+        <div class="field">
+          <label for="medName">Name *</label>
+          <input type="text" id="medName" required placeholder="e.g. Paracetamol 500mg">
+        </div>
+        <div class="field">
+          <label for="medGeneric">Generic Name *</label>
+          <input type="text" id="medGeneric" required placeholder="e.g. Paracetamol">
+        </div>
+        <div class="field">
+          <label for="medBatch">Batch Number *</label>
+          <input type="text" id="medBatch" required placeholder="e.g. BT-2201">
+        </div>
+        <div class="field">
+          <label for="medSupplier">Supplier *</label>
+          <input type="text" id="medSupplier" required placeholder="e.g. Apex Pharma Distributors">
+        </div>
+        <div class="field">
+          <label for="medPurchasePrice">Purchase Price (₹) *</label>
+          <input type="number" id="medPurchasePrice" min="0" step="0.01" required>
+        </div>
+        <div class="field">
+          <label for="medSellingPrice">Selling Price (₹) *</label>
+          <input type="number" id="medSellingPrice" min="0" step="0.01" required>
+        </div>
+        <div class="field">
+          <label for="medQuantity">Quantity *</label>
+          <input type="number" id="medQuantity" min="0" step="1" required>
+        </div>
+        <div class="field">
+          <label for="medMinStock">Minimum Stock *</label>
+          <input type="number" id="medMinStock" min="0" step="1" required>
+        </div>
+        <div class="field">
+          <label for="medRack">Rack Number *</label>
+          <input type="text" id="medRack" required placeholder="e.g. R-12">
+        </div>
+        <div class="field">
+          <label for="medGst">GST % </label>
+          <input type="number" id="medGst" min="0" step="0.5" value="5">
+        </div>
+        <div class="field">
+          <label for="medMfgDate">Manufacturing Date *</label>
+          <input type="date" id="medMfgDate" required>
+        </div>
+        <div class="field">
+          <label for="medExpDate">Expiry Date *</label>
+          <input type="date" id="medExpDate" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelMedicineBtn">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Medicine</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- =========================================================
+     MODAL: Invoice Preview / Print
+========================================================== -->
+<div class="modal-overlay" id="invoiceModalOverlay" hidden>
+  <div class="modal modal-invoice">
+    <div class="modal-header no-print">
+      <h3>Invoice Preview</h3>
+      <button class="icon-btn" id="closeInvoiceModal" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body" id="invoicePrintArea">
+      <!-- Populated dynamically by script.js -->
+    </div>
+    <div class="modal-footer no-print">
+      <button type="button" class="btn btn-secondary" id="backToBillBtn">Back to Bill</button>
+      <button type="button" class="btn btn-primary" id="printInvoiceBtn">
+        <span class="nav-icon" data-icon="print"></span> Print Invoice
+      </button>
+      <button type="button" class="btn btn-success" id="confirmSaleBtn">Confirm &amp; Save Sale</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     MODAL: Confirm dialog (delete / import / reset)
+========================================================== -->
+<div class="modal-overlay" id="confirmModalOverlay" hidden>
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h3 id="confirmModalTitle">Are you sure?</h3>
+    </div>
+    <div class="modal-body">
+      <p id="confirmModalMessage">This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" id="confirmCancelBtn">Cancel</button>
+      <button type="button" class="btn btn-danger" id="confirmOkBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     TOAST NOTIFICATIONS
+========================================================== -->
+<div class="toast-stack" id="toastStack"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
